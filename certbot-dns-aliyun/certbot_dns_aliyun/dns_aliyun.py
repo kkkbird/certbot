@@ -1,6 +1,6 @@
 """DNS Authenticator for Aliyun."""
 import logging
-
+import json
 
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkcore.request import CommonRequest
@@ -26,7 +26,7 @@ class Authenticator(dns_common.DNSAuthenticator):
 
     description = ('Obtain certificates using a DNS TXT record (if you are using Aliyun for '
                    'DNS).')
-    ttl = 120
+    ttl = 600
 
     def __init__(self, *args, **kwargs):
         super(Authenticator, self).__init__(*args, **kwargs)
@@ -93,14 +93,18 @@ class _AliyunClient(object):
             request = self._common_request("AddDomainRecord")
 
             request.add_query_param('DomainName', domain)
+
+            if record_name.endswith(domain):
+                record_name = record_name[:-len(domain) - 1]
+
             request.add_query_param('RR', record_name)
             request.add_query_param('Type', 'TXT')
             request.add_query_param('Value', record_content)
             request.add_query_param('TTL', record_ttl)
 
-            response = self.client.do_action(request)
+            response = self.client.do_action_with_exception(request)
         except Exception as e:
-            logger.error('Encountered Aliyun APII Error adding TXT record: %s', e)
+            logger.error('Encountered Aliyun API Error adding TXT record: %s', e)
             raise errors.PluginError('Error communicating with the Aliyun API: {0}'.format(e))
 
         rsp = json.loads(response, encoding='utf-8')
@@ -132,7 +136,7 @@ class _AliyunClient(object):
                 request = self._common_request("DeleteDomainRecord")
                 request.add_query_param('RecordId', record_id)                
                 
-                response = client.do_action(request)
+                response = self.client.do_action_with_exception(request)
 
                 rsp = json.loads(response, encoding='utf-8')
 
@@ -159,9 +163,9 @@ class _AliyunClient(object):
         try:
             request = self._common_request('DescribeSubDomainRecords')
 
-            request.add_query_param('SubDomain', record_name + domain)
+            request.add_query_param('SubDomain', record_name)
             request.add_query_param('Type', 'TXT')
-            response = client.do_action(request)
+            response = self.client.do_action_with_exception(request)
         except Exception as e:
             logger.debug('Encountered Aliyun getting TXT error: %s', e)
             return

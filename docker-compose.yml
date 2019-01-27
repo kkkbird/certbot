@@ -17,3 +17,25 @@ services:
     volumes:
       - .:/opt/certbot/src
       - /opt/certbot/venv
+
+  certbot-aliyun:
+    build:
+      context: .
+      dockerfile: Dockerfile-aliyun
+      args:
+        - http_proxy=http://proxy.sharkgulf.cn:8118
+    image: kaiserli/certbot-aliyun:latest
+    #entrypoint: /bin/sh
+    volumes:
+      - ./aliyun.ini:/secret/aliyun.ini:ro
+      - ./log:/var/log/letsencrypt
+      - ./certs:/etc/letsencrypt
+    command:
+      - certonly
+      - --dns-aliyun
+      - --dns-aliyun-credentials
+      - /secret/aliyun.ini
+      - --agree-tos
+      - --email 
+      - kaiserli@gmail.com
+      #- --dry-run

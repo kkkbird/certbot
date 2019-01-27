@@ -61,7 +61,7 @@ class AliyunClientTest(unittest.TestCase):
     def setUp(self):
         from certbot_dns_aliyun.dns_aliyun import _AliyunClient
 
-        self.aliyun_client = _AliyunClient(EMAIL, API_KEY)
+        self.aliyun_client = _AliyunClient(ACCESS_KEY_ID, ACCESS_KEY_SECRET)
 
         self.cf = mock.MagicMock()
         self.aliyun_client.cf = self.cf
