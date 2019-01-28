@@ -95,7 +95,9 @@ class _AliyunClient(object):
             request.add_query_param('DomainName', domain)
 
             if record_name.endswith(domain):
-                record_name = record_name[:-len(domain) - 1]
+                record_name = record_name[:-len(domain)]
+
+            record_name = record_name.rstrip(".")
 
             request.add_query_param('RR', record_name)
             request.add_query_param('Type', 'TXT')
