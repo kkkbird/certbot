@@ -89,16 +89,22 @@ class _AliyunClient(object):
         :raises certbot.errors.PluginError: if an error occurs communicating with the Aliyun API
         """
 
+        try:
+            request = self._common_request("GetMainDomainName")
+            request.add_query_param('InputString', record_name)
+            response = self.client.do_action_with_exception(request)
+        except Exception as e:
+            logger.error('Encountered Aliyun API Error get Domain name: %s', e)
+            raise errors.PluginError('Error communicating with the Aliyun API: {0}'.format(e))
+
+        rsp = json.loads(response, encoding='utf-8')
+        domain = rsp["DomainName"]
+        record_name = rsp["RR"]
+
         try:            
             request = self._common_request("AddDomainRecord")
 
             request.add_query_param('DomainName', domain)
-
-            if record_name.endswith(domain):
-                record_name = record_name[:-len(domain)]
-
-            record_name = record_name.rstrip(".")
-
             request.add_query_param('RR', record_name)
             request.add_query_param('Type', 'TXT')
             request.add_query_param('Value', record_content)

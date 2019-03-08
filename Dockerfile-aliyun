@@ -12,6 +12,12 @@ COPY acme src/acme
 COPY certbot src/certbot
 COPY certbot-dns-aliyun src/certbot-dns-aliyun
 
+# use mirror in china
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+    && mkdir -p /root/.pip \
+    && echo $'[global]\n\
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple' > /root/.pip/pip.conf
+
 RUN apk add --no-cache --virtual .certbot-deps \
         libffi \
         libssl1.0 \
